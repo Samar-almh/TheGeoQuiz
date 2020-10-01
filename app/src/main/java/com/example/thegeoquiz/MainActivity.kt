@@ -1,43 +1,51 @@
 package com.example.thegeoquiz
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_main.*
 
-
+private const val REQUEST_CODE_CHEAT =0
 class MainActivity : AppCompatActivity() {
 
+    private val quizViewModel: QuizViewModel by lazy {
+        ViewModelProviders.of(this).get(QuizViewModel::class.java)
+    }
     private lateinit var trueButton: Button
     private lateinit var falseButton: Button
+    private lateinit var cheatButton: Button
     private lateinit var nextButton: ImageButton
     private lateinit var prevButton: ImageButton
     private lateinit var questionTextView: TextView
+    private lateinit var resultTextView:TextView
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia, true,2),
-        Question(R.string.question_oceans, true,2),
-        Question(R.string.question_mideast, false,2),
-        Question(R.string.question_africa, false,2),
-        Question(R.string.question_americas, true,2),
-        Question(R.string.question_asia, true,2))
+
+
     private val TAG = "MainActivity"
 
-    private var currentIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG ,"onCreate() called" + currentIndex )
+        Log.d(TAG ,"onCreate() called" + quizViewModel)
+
+
         setContentView(R.layout.activity_main)
         trueButton = findViewById(R.id.t_Button)
         falseButton = findViewById(R.id.f_Button)
+        cheatButton = findViewById(R.id.cheat_button)
         nextButton = findViewById(R.id.next_Button)
         questionTextView = findViewById(R.id.question_text_view)
         prevButton= findViewById(R.id.prev_Button)
+        resultTextView=findViewById(R.id.result)
+
         updateQuestion()
 
         trueButton.setOnClickListener{
@@ -49,38 +57,44 @@ class MainActivity : AppCompatActivity() {
         }
 
         nextButton.setOnClickListener{
-            currentIndex = (currentIndex + 1) % questionBank.size
+            quizViewModel.moveToNext()
             updateQuestion()
         }
 
-
-
-        questionTextView.setOnClickListener{
-            currentIndex = (currentIndex + 1) % questionBank.size
-            updateQuestion()
+        cheatButton.setOnClickListener {
+            val answerIsTrue = quizViewModel.currentQuestionAnswer
+            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+            startActivityForResult(intent, REQUEST_CODE_CHEAT)
         }
 
-
+         questionTextView.setOnClickListener{
+             quizViewModel.moveToNext()
+            updateQuestion()
+        }
 
         prevButton.setOnClickListener{
-            if (currentIndex==0){
-                currentIndex =questionBank.size-1
-            }else {
-                currentIndex = (currentIndex - 1) % questionBank.size
-            }
+            quizViewModel.moveToBack()
             updateQuestion()
         }
 
+        updateQuestion()
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
+        if(resultCode!=Activity.RESULT_OK){return}
+        if(requestCode== REQUEST_CODE_CHEAT)
+        {
+            quizViewModel.isCheater=data?.getBooleanExtra(EXTRA_ANSWER_SHOWN,false)?:false
+
+        }
     }
 
-
-
     private fun updateQuestion() {
-        val questionTextResId = questionBank[currentIndex].textResId
+        val questionTextResId = quizViewModel.currentQuestionText
         question_text_view.setText(questionTextResId)
 
-        if(questionBank[currentIndex].answered <= 1){
+        if(quizViewModel.questionBank[quizViewModel.currentIndex].answered <= 1){
             trueButton?.isEnabled = false
             falseButton?.isEnabled = false
         }
@@ -89,26 +103,36 @@ class MainActivity : AppCompatActivity() {
             falseButton?.isEnabled = true
         }
 
-        if(showFinalScore() != 0){
-            var scorePercent =Math.round((showFinalScore().toFloat() / questionBank.size.toFloat()) * 100.0f);
-            Toast.makeText(this, "Your Final Score = " + showFinalScore() +"\n "
-                    +scorePercent + "%", Toast.LENGTH_SHORT)
-                .show()
-        }
+
 
 
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = questionBank[currentIndex].answer
-        val messageResId = if (userAnswer == correctAnswer) {
-            questionBank[currentIndex].answered = 1
-            R.string.correct_msg
-        } else {
-            questionBank[currentIndex].answered = 0
-            R.string.inco_msg
+        val correctAnswer =  quizViewModel.currentQuestionAnswer
+        val messageResId = when {
+            quizViewModel.isCheater -> R.string.judgment_toast
+            userAnswer == correctAnswer -> R.string.correct_msg
+            else -> R.string.inco_msg
         }
+        Toast.makeText(this, messageResId, Toast.LENGTH_LONG).show()
+
+        var add=isCheater(messageResId)
+
+        quizViewModel.grade+=add
+
+        resultTextView.setText(quizViewModel.text+quizViewModel.getGrade)
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
+        quizViewModel.isCheater=false
+        if(quizViewModel.numberOfAnsweredQuestions==quizViewModel.size) {
+
+            var scorePercent =Math.round(((quizViewModel.getGrade.toFloat() / quizViewModel.size.toFloat()) * 100.0f)/4.0f);
+
+            val toast= Toast.makeText(this, "Your Final Score = ${quizViewModel.getGrade}"+"\n"+scorePercent+"%", Toast.LENGTH_LONG)
+            toast.setGravity(Gravity.CENTER,0,0)
+            toast.show()
+
+        }
 
         trueButton?.isEnabled = false
         falseButton?.isEnabled = false
@@ -116,46 +140,47 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun showFinalScore() : Int
-    {
-        var mScore = 0;
-        for ( n in questionBank )
-        {
-            if (n.answered==2) {
-                mScore = 0;
-                break
-            }
-            else {
-                mScore+= n.answered
-            }
-        }
-        return mScore ;
-    }
 
+
+    fun isCheater(message:Int):Int
+    {
+        var res=0
+        if(message!=R.string.judgment_toast&&message!=R.string.inco_msg)
+                res = when{
+
+                    quizViewModel.kindOfQuestions=="easy"->2
+                    quizViewModel.kindOfQuestions=="medial"->4
+                    else ->6
+
+
+                }
+        return res
+
+    }
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG ,"onStart() called "  + currentIndex)
+        Log.d(TAG ,"onStart() called "  + quizViewModel.currentIndex)
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG ,"onPause() called "  + currentIndex)
+        Log.d(TAG ,"onPause() called "  +quizViewModel.currentIndex)
     }
 
     override fun onRestart() {
         super.onRestart()
-        Log.d(TAG ,"onRestart() called " + currentIndex )
+        Log.d(TAG ,"onRestart() called " + quizViewModel.currentIndex )
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG ,"onResume() called " + currentIndex)
+        Log.d(TAG ,"onResume() called " + quizViewModel.currentIndex)
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG ,"onStop() called "  + currentIndex )
+        Log.d(TAG ,"onStop() called "  + quizViewModel.currentIndex )
     }
 
 

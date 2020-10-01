@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">TheGeoQuiz</string>
-
+    <!--easy questions-->
     <string name="question_australia">Canberra is the capital of Australia.</string>
     <string name="question_oceans">The Pacific Ocean is larger than the Atlantic Ocean.</string>
     <string name="question_mideast">The Suez Canal connects the Red Sea and the Indian Ocean.</string>
@@ -8,6 +8,21 @@
     <string name="question_americas">The Amazon River is the longest river in the Americas.</string>
     <string name="question_asia">Lake Baikal is the world\'s oldest and deepest freshwater lake.</string>
 
+    <!--    medial questions-->
+    <string name="question_medial1">Madreed is the capital of Australia.</string>
+    <string name="question_medial2">The Atlantic Ocean is smallest than the Pacific Ocean .</string>
+    <string name="question_medial3">The Suez Canal connects the dead Sea and the Indian Ocean.</string>
+    <string name="question_medial4">The source of the Nile River is in Yemen.</string>
+    <string name="question_medial5">The Amazon River is the shortest river in the Americas.</string>
+    <string name="question_medial6">Lake Baikal is the world\'s newest and deepest freshwater lake.</string>
+
+    <!--   hard questions-->
+    <string name="question_hard1">Sedny is the capital of Australia.</string>
+    <string name="question_hard2">Indian Ocean is larger than the Atlantic Ocean.</string>
+    <string name="question_hard3">The Suez Canal connects the Red Sea and the Pacific Ocean.</string>
+    <string name="question_hard4">The source of the Nile River is in Oman.</string>
+    <string name="question_hard5">The Amazon River is the longest river in the korea.</string>
+    <string name="question_hard6">Lake Baikal is the world\'s oldest and shortest freshwater lake.</string>
 
     <string name="true_button">True</string>
     <string name="false_button">False</string>
@@ -16,6 +31,10 @@
     <string name="correct_msg">Correct !</string>
     <string name="inco_msg">Incorrect</string>
 
+    <string name="warning_text">Are you sure you want to do this?</string>
+    <string name="show_answer_button">Show Answer</string>
+    <string name="cheat_button">Cheat!</string>
+    <string name="judgment_toast">Cheating is wrong.</string>
 
 
 </resources>
