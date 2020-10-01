@@ -20,20 +20,20 @@ class QuizViewModel : ViewModel()  {
         Question(R.string.question_asia, true,2))
 
     val medialQuestion = listOf(
-        Question(R.string.question_medial1, false,2),
-        Question(R.string.question_medial2, true,2),
-        Question(R.string.question_medial3, false,2),
-        Question(R.string.question_medial4, false,2),
-        Question(R.string.question_medial5, false,2),
-        Question(R.string.question_medial6, false,2))
+        Question(R.string.question_medial1, false,4),
+        Question(R.string.question_medial2, true,4),
+        Question(R.string.question_medial3, false,4),
+        Question(R.string.question_medial4, false,4),
+        Question(R.string.question_medial5, false,4),
+        Question(R.string.question_medial6, false,4))
 
     val hardQuestion = listOf(
-        Question(R.string.question_hard1, false,2),
-        Question(R.string.question_hard2, false,2),
-        Question(R.string.question_hard3, false,2),
-        Question(R.string.question_hard4, false,2),
-        Question(R.string.question_hard5, false,2),
-        Question(R.string.question_hard6, false,2))
+        Question(R.string.question_hard1, false,6),
+        Question(R.string.question_hard2, false,6),
+        Question(R.string.question_hard3, false,6),
+        Question(R.string.question_hard4, false,6),
+        Question(R.string.question_hard5, false,6),
+        Question(R.string.question_hard6, false,6))
 
     val questionBank = listOf(
         easyQuestion.random(),easyQuestion.random(),medialQuestion.random(),medialQuestion.random()

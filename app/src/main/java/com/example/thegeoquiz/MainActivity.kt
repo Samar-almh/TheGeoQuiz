@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 private const val REQUEST_CODE_CHEAT =0
 class MainActivity : AppCompatActivity() {
-
+private  var cheatNumber=0
     private val quizViewModel: QuizViewModel by lazy {
         ViewModelProviders.of(this).get(QuizViewModel::class.java)
     }
@@ -65,10 +65,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         cheatButton.setOnClickListener {
+            cheatNumber+=1
             val answerIsTrue = quizViewModel.currentQuestionAnswer
 
             val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
             startActivityForResult(intent, REQUEST_CODE_CHEAT)
+
+            if (cheatNumber==3){
+                cheatButton.isEnabled=false
+            }
+            cheatNumber=0
         }
 
          questionTextView.setOnClickListener{
@@ -161,6 +167,7 @@ class MainActivity : AppCompatActivity() {
         return res
 
     }
+
 
     override fun onStart() {
         super.onStart()
